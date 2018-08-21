@@ -21,30 +21,12 @@ kubeletVersion: 1.11.0-00
 kubectlVersion: 1.11.0-00
 kubeadm_reset_flags: "--force"
 
-reset_environment: true
+reset_environment: false
 reset_rook: true
 
 master_taint: true
 
-
-#Network tests
-#Calico doesn't seem to work too well on VMware environment.
-#Let's just test weave for now.
-
-#1st attempt
-#pod_network_cidr: "192.168.10.0/24"
-#addons start successfully.
-#elasticsearch starts successfully.
-#but pods ips are not in this cidr!
-#example elasticsearch-master pod had 10.40.0.2
-#getting the weave status shows
-#10.32.0.0/12 configured as pod cidr
-
-#2nd attempt
-#all good
 pod_network_cidr: "10.32.0.0/12"
-
-#3rd attempt back to calico.
 
 
 metallb_public_ip_range: "192.168.0.140-192.168.0.150"
