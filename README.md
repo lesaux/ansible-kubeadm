@@ -12,6 +12,8 @@ The docker-ce module was taken on Galaxy.
 
 The `addons.yml` tasks complete the installation by adding a few features to our fresh kubernetes cluster.
 
+This is done by applying new manifests to the cluster with kubectl. All manifests are ansible templates which are rendered in the `dynamically_rendered` folder before `kubectl apply` is run
+
 ### 1.a K8S-Dashboard
 
 It is made available on a public ip managed by metallb (see the metallb* variables in group_vars).
