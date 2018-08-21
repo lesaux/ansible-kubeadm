@@ -54,12 +54,14 @@ The `addons.yml` tasks complete the installation by adding a few features to our
 
 This is done by applying new manifests to the cluster with kubectl. All manifests are ansible templates which are rendered in the `dynamically_rendered` folder before `kubectl apply` is run
 
+You can edit this file and add and removes roles to fit your setup.
+
 ### 1.a) K8S-Dashboard
 
 It is made available on a public ip managed by metallb (see the metallb* variables in group_vars).
 
 ### 1.b) Network CNI:
-Currently either calico or weave are supported. My plan was to only use calico, but I have had trouble with it on VMware environemnts, which is why I now included weave.
+Currently either Calico or Weave are supported. My plan was to only use Calico, but I have had trouble with it on VMware environemnts, which is why I now included Weave.
 
 ### 1.c) Load-Balancing:
 
@@ -82,6 +84,14 @@ metallb_grafana_dashboard_public_ip: "192.168.0.144"
 
 These vars are used in the various role templates of kubectl manifests.
 
+With metallb, a Kubernetes Service can be of type `loadbalancer`:
+
+```
+  type: LoadBalancer
+  loadBalancerIP: {{ metallb_k8s_dashboard_public_ip }}
+``` 
+
+You don't have to specify the ip is don't want to. Metallb will pick a free ip from the range you assigned to it.
 
 ### 1.d) Persistent-Volumes support
 
