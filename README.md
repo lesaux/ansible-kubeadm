@@ -4,6 +4,8 @@ ansible scripts to deploy baremetal openstack clusters.
 
 Currently either single master or ha-cluster of three masters is supported (You need either 1 or 3 nodes defined in the [masters] section of the hosts file.
 
+We use `groups['masters'] | length == 1 or 3` to determine if we are in the case of a ha setup or not. If you have 3 masters defined, then the logic for setting an ha cluster will kick in.
+
 When setup up a ha-cluster a prerequisite is to a have a load balancer fronting all three master nodes on port 6443, along with a dns record to resolve it.
 
 An example haproxy configuration to achieve this:
@@ -71,6 +73,8 @@ These vars are used in the various role templates of kubectl manifests.
 I have been testing Rook and the Freenas NFS provider.
 Rook ceph is a little slow in my environment.
 
+In my case I used persistent volumes for the Elasticsearch data nodes.
+
 ## 2) Monitoring
 
 ### 2.a) Elasticsearch
@@ -89,7 +93,7 @@ Is getting old, but still provides nice widgets to the k8s-dashboard.
 
 beats relies on this service to obtain k8s metrics.
 
-## 3) Adding new worker nodes to an existing cluster
+## 3) Adding a new worker node to an existing cluster
 
 The add_nodes.yml task refreshes a token for an existing master, and contructs a kubeadm join command which is then run on the new node that we want to add to our cluster.
 
