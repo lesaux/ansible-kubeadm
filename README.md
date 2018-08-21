@@ -75,7 +75,7 @@ beats relies on this service to obtain k8s metrics.
 
 The add_nodes.yml task refreshes a token for an existing master, and contructs a kubeadm join command which is then run on the new node that we want to add to our cluster.
 
-This requires a new `hosts` files with one existing master, and only new worker nodes. see hosts_add_nodes file for an example.
+This requires a new `hosts` files with one existing master, and only new worker nodes. see `hosts_add_nodes` file for an example.
 
 
 ## 4. Upgrades
