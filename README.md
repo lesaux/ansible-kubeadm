@@ -63,6 +63,7 @@ metallb_kibana_dashboard_public_ip: "192.168.0.143"
 metallb_grafana_dashboard_public_ip: "192.168.0.144"
 ```
 
+These vars are used in the various role templates of kubectl manifests.
 
 
 ### 1.d) Persistent-Volumes support
