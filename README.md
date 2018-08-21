@@ -34,7 +34,7 @@ Rook ceph is a little slow in my environment.
 
 The `monitoring.yml` tasks deploys an ES cluster (pires) and all of the beats components. Kibana is installed and dashboards are provisioned. The data nodes are stateful sets.
 
-### 2,2 *-beats
+### 2.2 *-beats
 
 Filebeat, packetbeat, metricbeat and auditbeat are installed.
 
