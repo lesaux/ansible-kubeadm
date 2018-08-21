@@ -21,7 +21,7 @@
   hosts: workers
   become: yes
   roles:
-    - k8s-slave
+    - k8s-worker
 
 #- name: Rook Cleanup
 #  hosts: masters, workers

@@ -21,4 +21,4 @@
   hosts: workers
   gather_facts: True
   roles:
-    - k8s-slave
+    - k8s-worker
