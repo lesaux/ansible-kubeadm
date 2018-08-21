@@ -48,6 +48,23 @@ Currently either calico or weave are supported. My plan was to only use calico, 
 
 For Load-Balancing, Metallb is included.
 
+Metallb needs to know of a public cidr range it can use for it's load-balancers:
+In `group_vars` I have
+
+`metallb_public_ip_range: "192.168.0.140-192.168.0.150"`
+
+Accompanied by a few other variables to expose useful services:
+
+```
+metallb_k8s_dashboard_public_ip: "192.168.0.140"
+metallb_rook_dashboard_public_ip: "192.168.0.141"
+metallb_elasticsearch_clients_public_ip: "192.168.0.142"
+metallb_kibana_dashboard_public_ip: "192.168.0.143"
+metallb_grafana_dashboard_public_ip: "192.168.0.144"
+```
+
+
+
 ### 1.d) Persistent-Volumes support
 
 I have been testing Rook and the Freenas NFS provider.
