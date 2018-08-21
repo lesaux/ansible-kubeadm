@@ -103,3 +103,4 @@ This requires a new `hosts` files with one existing master, and only new worker 
 ## 4) Upgrades
 
 This is just an attempt. I went through an ha-cluster upgrade from v1.11.0 to v1.11.2. Chances of this failing are so high that's it probably risky to even try it. Let's hope for kubeadm to bring to us an easier upgrade process.
+For a standalone master this has been successful from an upgrade from v1.10.0 to v1.11.2.
