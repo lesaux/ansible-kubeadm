@@ -36,6 +36,9 @@ During a deployment, the kubeconfig file is copied to the current working direct
 
 You can either copy to `~/.kube/config` or add `--kubeconfig ./kubeconfig` to run `kubectl`
 
+Some passwords in the group_vars use ansible_vault: the ssh root password and my freenas admin account password.
+You can replace those with your own values. If you keep on using vault, you will need to pass --ask-vault-pass when running ansible.
+
 ## 1) Addons 
 
 The `addons.yml` tasks complete the installation by adding a few features to our fresh kubernetes cluster.
