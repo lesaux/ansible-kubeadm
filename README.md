@@ -2,6 +2,8 @@
 
 ansible scripts to deploy baremetal openstack clusters.
 
+## Single master and HA support
+
 Currently either single master or ha-cluster of three masters is supported (You need either 1 or 3 nodes defined in the [masters] section of the hosts file.
 
 We use `groups['masters'] | length == 1 or 3` to determine if we are in the case of a ha setup or not. If you have 3 masters defined, then the logic for setting an ha cluster will kick in.
