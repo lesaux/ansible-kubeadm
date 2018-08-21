@@ -6,6 +6,29 @@ Currently either single master or ha-cluster of three masters is supported (You 
 
 When setup up a ha-cluster a prerequisite is to a have a load balancer fronting all three master nodes on port 6443, along with a dns record to resolve it.
 
+An example haproxy configuration to achieve this:
+
+```
+frontend k8s-api
+  bind 192.168.0.10:6443
+  bind 127.0.0.1:6443
+  mode tcp
+  option tcplog
+  default_backend k8s-api
+
+backend k8s-api
+  mode tcp
+  option tcplog
+  option tcp-check
+  balance roundrobin
+  default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
+  server k8s-api-1 192.168.0.104:6443 check
+  server k8s-api-2 192.168.0.105:6443 check
+  server k8s-api-3 192.168.0.106:6443 check
+```
+Where 192.168.0.104, 192.168.0.105 and 192.168.0.106 are your master nodes.
+
+
 The docker-ce module was taken on Galaxy.
 
 ## 1. Addons 
