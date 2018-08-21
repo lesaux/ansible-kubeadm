@@ -30,8 +30,11 @@ backend k8s-api
 ```
 Where 192.168.0.104, 192.168.0.105 and 192.168.0.106 are your master nodes.
 
-
 The docker-ce module was taken on Galaxy.
+
+During a deployment, the kubeconfig file is copied to the current working directoy.
+
+You can either copy to `~/.kube/config` or add `--kubeconfig ./kubeconfig` to run `kubectl`
 
 ## 1) Addons 
 
