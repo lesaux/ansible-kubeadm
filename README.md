@@ -2,11 +2,24 @@
 
 ansible scripts to deploy baremetal openstack clusters.
 
+There is no provisioning included in these scripts. Your K8S nodes should be up and running with ssh root access allowed.
+
+For true baremetal, I use cobbler or Foreman to pxe boot my nodes  on Ubuntu Xenial. For a VMware environment I use Terraform to provision my nodes ahead of time.
+
+I have only tested this with Ubuntu Xenial.
+
+During a deployment, the kubeconfig file is copied from a master node to your workstation's current working directoy.
+You can either copy to `~/.kube/config` or add `--kubeconfig ./kubeconfig` to run `kubectl`
+
+Some passwords in the `group_vars` use ansible_vault: the ssh root password and my freenas admin account password.
+You can replace those with your own values. If you keep on using vault, you will need to pass `--ask-vault-pass` when running ansible.
+
+
 ## Single master and HA support
 
 Currently either single master or ha-cluster of three masters is supported (You need either 1 or 3 nodes defined in the [masters] section of the hosts file.
 
-We use `groups['masters'] | length == 1 or 3` to determine if we are in the case of a ha setup or not. If you have 3 masters defined, then the logic for setting an ha cluster will kick in.
+We use `groups['masters'] | length == 1 or 3` to determine if we are in the case of a HA setup or not. If you have 3 masters defined, then the logic for setting an ha cluster will kick in.
 
 When setup up a ha-cluster a prerequisite is to a have a load balancer fronting all three master nodes on port 6443, along with a dns record to resolve it.
 
@@ -34,12 +47,6 @@ Where 192.168.0.104, 192.168.0.105 and 192.168.0.106 are your master nodes.
 
 The docker-ce module was taken on Galaxy.
 
-During a deployment, the kubeconfig file is copied to the current working directoy.
-
-You can either copy to `~/.kube/config` or add `--kubeconfig ./kubeconfig` to run `kubectl`
-
-Some passwords in the group_vars use ansible_vault: the ssh root password and my freenas admin account password.
-You can replace those with your own values. If you keep on using vault, you will need to pass --ask-vault-pass when running ansible.
 
 ## 1) Addons 
 
