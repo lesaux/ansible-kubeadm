@@ -40,6 +40,14 @@ The `monitoring.yml` tasks deploys an ES cluster (pires) and all of the beats co
 
 Filebeat, packetbeat, metricbeat and auditbeat are installed.
 
+### heapster
+
+Is getting old, but still provides nice widgets to the k8s-dashboard.
+
+### kube-state-metrics
+
+beats relies on this service to obtain k8s metrics.
+
 ## 3. Adding new worker nodes to an existing cluster
 
 The add_nodes.yml task refreshes a token for an existing master, and contructs a kubeadm join command which is then run on the new node that we want to add to our cluster.
