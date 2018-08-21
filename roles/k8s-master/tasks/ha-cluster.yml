@@ -1,0 +1,114 @@
+
+- name: "Copy kubeadm master[0] manifests yml files"
+  become: true
+  template: src="{{ item }}.j2" dest="/etc/kubernetes/{{ item }}"
+  with_items:
+    - kubeadm-config-primary.yaml
+  when:
+    - "groups['masters'][0] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: Init Kubernetes cluster primary master
+  when:
+    - reset_environment
+    - "groups['masters'][0] == inventory_hostname and groups['masters'] | length > 1"
+  become: true
+  shell: |
+    kubeadm init --config /etc/kubernetes/kubeadm-config-primary.yaml
+  register: init_cluster
+
+- debug: msg="{{ init_cluster.stdout }}"
+  when:
+    - reset_environment
+    - "groups['masters'][0] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: set kubeadm join command
+  when:
+    - reset_environment
+    - groups['masters'][0] == inventory_hostname
+  set_fact:
+    kubeadm_join_command: "{{ init_cluster.stdout_lines | last }}"
+
+- name: Creates /etc/kubernetes/pki/etcd directory
+  become: true
+  file: path=/etc/kubernetes/pki/etcd state=directory
+  when:
+    - reset_environment
+    - groups['masters'][0] != inventory_hostname
+
+#- name: Copy certificates from primary master to secondary masters
+#  when:
+#    - reset_environment
+#    - "groups['masters'][0] != inventory_hostname and groups['masters'] | length > 1"
+#  become: true
+#  shell: "sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ hostvars[groups['masters'][0]]['ansible_default_ipv4']['address'] }}:{{ item }} {{ item }}"
+#  with_items:
+#    - /etc/kubernetes/pki/ca.crt
+#    - /etc/kubernetes/pki/ca.key
+#    - /etc/kubernetes/pki/sa.key
+#    - /etc/kubernetes/pki/sa.pub
+#    - /etc/kubernetes/pki/front-proxy-ca.crt
+#    - /etc/kubernetes/pki/front-proxy-ca.key
+#    - /etc/kubernetes/pki/etcd/ca.crt
+#    - /etc/kubernetes/pki/etcd/ca.key
+#    - /etc/kubernetes/admin.conf
+
+- name: pause for primary master node to settle
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds for secondary master node to settle"
+  when: reset_environment
+
+
+- name: "Copy kubeadm master[1] manifests yml files"
+  become: true
+  template: src="{{ item }}.j2" dest=/etc/kubernetes/{{ item }}
+  with_items:
+    - kubeadm-config-secondary.yaml
+    - kubeadm-init-secondary.sh
+  when:
+    - "groups['masters'][1] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: Join secondary master
+  become: true
+  when:
+    - "groups['masters'][1] == inventory_hostname and groups['masters'] | length > 1"
+  shell: sh /etc/kubernetes/kubeadm-init-secondary.sh
+  register: init_secondary
+
+- debug: msg="{{ init_secondary.stdout }}"
+  when:
+    - reset_environment
+    - "groups['masters'][1] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: pause for secondary master node to settle
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds for secondary master node to settle"
+  when: reset_environment
+
+- name: "Copy kubeadm master[2] manifests yml files"
+  become: true
+  template: src="{{ item }}.j2" dest=/etc/kubernetes/{{ item }}
+  with_items:
+    - kubeadm-config-tertiary.yaml
+    - kubeadm-init-tertiary.sh
+  when:
+    - "groups['masters'][2] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: Join tertiary master
+  become: true
+  when:
+    - "groups['masters'][2] == inventory_hostname and groups['masters'] | length > 1"
+  shell: sh /etc/kubernetes/kubeadm-init-tertiary.sh
+  register: init_tertiary
+
+- debug: msg="{{ init_tertiary.stdout }}"
+  when:
+    - reset_environment
+    - "groups['masters'][2] == inventory_hostname and groups['masters'] | length > 1"
+
+- name: pause for tertiary master node to settle
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds for tertiary master node to settle"
+  when: reset_environment

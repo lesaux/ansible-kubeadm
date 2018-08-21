@@ -1,0 +1,36 @@
+- name: prerequisites
+  hosts: masters, workers
+  gather_facts: False
+  roles:
+    - prerequisites
+
+- name: Bootstrap Tasks
+  hosts: masters, workers
+  gather_facts: True
+  roles:
+    - docker-ce
+    - kubeadm
+
+- name: Install Kubernetes master
+  hosts: masters
+  become: yes
+  roles:
+    - k8s-master
+
+- name: Install nodes
+  hosts: workers
+  become: yes
+  roles:
+    - k8s-slave
+
+#- name: Rook Cleanup
+#  hosts: masters, workers
+#  become: yes
+#  roles:
+#    - rook-cleanup
+
+- name: Network, LB  and Storage addons
+  import_playbook: addons.yml
+
+#- name: Monitoring addons
+#  import_playbook: monitoring.yml

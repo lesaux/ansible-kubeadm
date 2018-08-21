@@ -1,0 +1,28 @@
+- name: Creates auditbeat directory
+  become: false
+  file: path=./dynamically_rendered/manifests/auditbeat state=directory
+  #delegate_to: localhost
+
+- name: "Copy auditbeat manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/auditbeat/{{ item }}
+  with_items:
+    - auditbeat-namespace.yaml
+    - auditbeat-role.yaml
+    - auditbeat-service-account.yaml
+    - auditbeat-role-binding.yaml
+    - auditbeat-daemonset-configmap.yaml
+    - auditbeat-daemonset.yaml
+
+- name: deploy auditbeat cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/auditbeat/{{ item }}
+  with_items:
+    - auditbeat-namespace.yaml
+    - auditbeat-role.yaml
+    - auditbeat-service-account.yaml
+    - auditbeat-role-binding.yaml
+    - auditbeat-daemonset-configmap.yaml
+    - auditbeat-daemonset.yaml
+

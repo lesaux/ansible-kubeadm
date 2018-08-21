@@ -1,0 +1,11 @@
+- name: Install Network and Storage Addons
+  hosts: manifests
+  gather_facts: false
+  become: yes
+  roles:
+    #- calico
+    - weave
+    - metallb
+    #- rook
+    - freenas-nfs-provisioner
+    - k8s-dashboard

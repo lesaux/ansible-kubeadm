@@ -1,0 +1,59 @@
+- name: Reset Kubernetes component
+  shell: "kubeadm reset {{kubeadm_reset_flags }}"
+  become: true
+  register: reset_cluster
+  when:
+    - reset_environment
+
+- name: Standalone Master Setup
+  import_tasks: standalone.yml
+  when:
+    - groups['masters'] | length == 1
+
+- name: Clustered Masters Setup
+  import_tasks: ha-cluster.yml
+  when:
+    - groups['masters'] | length == 3
+
+- name: Create Kubernetes config directory
+  become: false
+  when:
+    - reset_cluster
+    - reset_environment
+  file: path="~/.kube/" state=directory
+
+- name: Change permissions of .kube/config
+  file: path=/etc/kubernetes/admin.conf mode=0775
+  when: 
+    - reset_cluster
+    - reset_environment
+  become: true
+
+- name: "Copy admin.conf to Home directory"
+  #when: init_cluster and ansible_user is defined
+  when:
+    - reset_cluster
+    - reset_environment
+  become: false
+  copy:
+    src: "/etc/kubernetes/admin.conf"
+    dest: "~/.kube/config"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+    remote_src: True
+
+- name: taint master nodes
+  when:
+    - master_taint
+    - reset_environment
+    - "groups['masters'][0] == inventory_hostname"
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-"
+
+- name: Copy kubeconfig locally
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: ./kubeconfig
+    flat: yes
+  when:
+    - "groups['masters'][0] == inventory_hostname"

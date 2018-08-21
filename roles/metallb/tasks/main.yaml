@@ -1,0 +1,25 @@
+- name: Creates metallb directory
+  become: false
+  file: path=./dynamically_rendered/manifests/metallb state=directory
+
+- name: "Copy metallb manifests yml file"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/metallb/{{ item }}
+  with_items:
+    - metallb.yaml
+    - metallb_config.yaml
+
+- name:  deploy metallb service
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/metallb/{{ item }}
+    sleep 5
+  with_items:
+    - metallb.yaml
+    - metallb_config.yaml
+
+- name: pause for metallb to settle
+  pause:
+    seconds: 60
+    prompt: "Waiting 60 seconds for all nodes to settle"
+  when: reset_environment

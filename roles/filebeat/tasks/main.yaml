@@ -1,0 +1,26 @@
+- name: Creates filebeat directory
+  become: false
+  file: path=./dynamically_rendered/manifests/filebeat state=directory
+
+- name: "Copy filebeat manifests yaml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/filebeat/{{ item }}
+  with_items:
+    - filebeat-namespace.yaml
+    - filebeat-configmap.yaml
+    - filebeat-role-binding.yaml
+    - filebeat-role.yaml
+    - filebeat-service-account.yaml
+    - filebeat-daemonset.yaml
+
+- name: deploy filebeat 
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/filebeat/{{ item }}
+  with_items:
+    - filebeat-namespace.yaml
+    - filebeat-configmap.yaml
+    - filebeat-role-binding.yaml
+    - filebeat-role.yaml
+    - filebeat-service-account.yaml
+    - filebeat-daemonset.yaml

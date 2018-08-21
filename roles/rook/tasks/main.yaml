@@ -1,0 +1,38 @@
+- name: Creates rook directory
+  become: false
+  file: path=./dynamically_rendered/manifests/rook state=directory
+
+- name: "Copy rook manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/rook/{{ item }}
+  with_items:
+    - operator.yaml
+    - cluster.yaml
+    - dashboard.yaml
+    - storage-class.yaml
+
+- name: deploy rook operator
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/rook/operator.yaml
+
+- name: pause for rook operator to settle
+  pause:
+    seconds: 30
+    prompt: "Waiting 30 seconds for all nodes to settle"
+  when: reset_environment and reset_rook
+
+- name: install rook cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/rook/{{ item }}
+  with_items:
+    - cluster.yaml
+    - dashboard.yaml
+    - storage-class.yaml
+
+- name: pause for rook cluster
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds for all nodes to settle"
+  when: reset_environment and reset_rook

@@ -1,0 +1,38 @@
+- name: Check number of masters
+  fail: msg="You need either one or three masters"
+  when: not (groups['masters'] | length == 1) and
+        not (groups['masters'] | length == 3)
+
+- name: Install Python
+  raw: apt-get install python -y
+  become: true
+
+- name: install pre-requisites packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nano
+    - rpcbind
+    - nfs-common
+    - curl
+    - apt-transport-https
+    - sshpass
+    - ntp
+
+#- name: stop logging auditd events on nodes
+#  become: true
+#  shell: |
+#    systemctl mask systemd-journald-audit.socket
+
+#- name: Stop service auditd, in all cases
+#  service:
+#    name: auditd
+#    state: stopped
+#    enabled: no
+
+- name: Start service ntp
+  service:
+    name: ntp
+    state: started
+    enabled: yes

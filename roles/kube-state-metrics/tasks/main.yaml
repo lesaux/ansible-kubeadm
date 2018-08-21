@@ -1,0 +1,29 @@
+- name: Creates kube-state-metrics directory
+  become: false
+  file: path=./dynamically_rendered/manifests/kube-state-metrics state=directory
+  #delegate_to: localhost
+
+- name: "Copy kube-state-metrics manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/kube-state-metrics/{{ item }}
+  with_items:
+    - kube-state-metrics-cluster-role.yaml
+    - kube-state-metrics-cluster-role-binding.yaml
+    - kube-state-metrics-role.yaml
+    - kube-state-metrics-role-binding.yaml
+    - kube-state-metrics-service-account.yaml
+    - kube-state-metrics-service.yaml
+    - kube-state-metrics-deployment.yaml
+
+- name: deploy kube-state-metrics cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/kube-state-metrics/{{ item }}
+  with_items:
+    - kube-state-metrics-cluster-role.yaml
+    - kube-state-metrics-cluster-role-binding.yaml
+    - kube-state-metrics-role.yaml
+    - kube-state-metrics-role-binding.yaml
+    - kube-state-metrics-service-account.yaml
+    - kube-state-metrics-service.yaml
+    - kube-state-metrics-deployment.yaml

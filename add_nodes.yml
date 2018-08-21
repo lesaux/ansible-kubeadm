@@ -1,0 +1,24 @@
+- name: Refresh Token
+  hosts: masters
+  gather_facts: True
+  roles:
+    - k8s-add-nodes
+
+- name: prerequisites
+  hosts: workers
+  gather_facts: False
+  roles:
+    - prerequisites
+
+- name: Bootstrap Tasks
+  hosts: workers
+  gather_facts: True
+  roles:
+    - docker-ce
+    - kubeadm
+
+- name: Add nodes
+  hosts: workers
+  gather_facts: True
+  roles:
+    - k8s-slave

@@ -1,0 +1,65 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: packetbeat-dynamic
+  namespace: kube-packetbeat
+  labels:
+    k8s-app: packetbeat-dynamic
+    kubernetes.io/cluster-service: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: packetbeat-dynamic
+        kubernetes.io/cluster-service: "true"
+    spec:
+      serviceAccountName: packetbeat-dynamic
+      terminationGracePeriodSeconds: 30
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: packetbeat-dynamic
+        image: docker.elastic.co/beats/packetbeat:6.2.3
+        imagePullPolicy: Always
+        args: [
+          "-c", "/etc/packetbeat.yml",
+          "-e",
+        ]
+        securityContext:
+          runAsUser: 0
+          capabilities:
+            add:
+            - NET_ADMIN
+        env:
+        - name: ELASTICSEARCH_HOST
+          value: elasticsearch.kube-elasticsearch.svc.cluster.local
+        - name: ELASTICSEARCH_PORT
+          value: "9200"
+        - name: ELASTICSEARCH_USERNAME
+          value: elastic
+        - name: ELASTICSEARCH_PASSWORD
+          value: changeme
+        #- name: CLOUD_ID
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: dynamic-logging
+        #      key: CLOUD_ID
+        #- name: ELASTIC_PASSWORD
+        #  valueFrom:
+        #    secretKeyRef:
+        #      name: dynamic-logging
+        #      key: ELASTIC_PASSWORD
+        volumeMounts:
+        - name: config
+          mountPath: /etc/packetbeat.yml
+          readOnly: true
+          subPath: packetbeat.yml
+        - name: data
+          mountPath: /usr/share/packetbeat/data
+      volumes:
+      - name: config
+        configMap:
+          defaultMode: 0600
+          name: packetbeat-dynamic-config
+      - name: data
+        emptyDir: {}

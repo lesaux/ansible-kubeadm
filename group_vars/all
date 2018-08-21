@@ -1,0 +1,68 @@
+---
+# file: group_vars/all
+ansible_connection: ssh 
+ansible_ssh_user: root
+ansible_ssh_pass: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36343835306139613764343330316263356430616436326532616130616438306138656136633662
+          3739353638373964306362353631613865653466643465610a663664343733656636623736356133
+          66316636666464383165326536623435393133346632653135633739666165386639346137333464
+          6339336566383336340a613663666165383165613437396662626530633035326163663061396264
+          3662
+
+
+#example versions
+#1.10.1-00
+#1.11.2-00
+
+kubernetesVersion: v1.11.0
+kubeadmVersion: 1.11.0-00
+kubeletVersion: 1.11.0-00
+kubectlVersion: 1.11.0-00
+kubeadm_reset_flags: "--force"
+
+reset_environment: true
+reset_rook: true
+
+master_taint: true
+
+
+#Network tests
+#Calico doesn't seem to work too well on VMware environment.
+#Let's just test weave for now.
+
+#1st attempt
+#pod_network_cidr: "192.168.10.0/24"
+#addons start successfully.
+#elasticsearch starts successfully.
+#but pods ips are not in this cidr!
+#example elasticsearch-master pod had 10.40.0.2
+#getting the weave status shows
+#10.32.0.0/12 configured as pod cidr
+
+#2nd attempt
+#all good
+pod_network_cidr: "10.32.0.0/12"
+
+#3rd attempt back to calico.
+
+
+metallb_public_ip_range: "192.168.0.140-192.168.0.150"
+
+metallb_k8s_dashboard_public_ip: "192.168.0.140"
+metallb_rook_dashboard_public_ip: "192.168.0.141"
+metallb_elasticsearch_clients_public_ip: "192.168.0.142"
+metallb_kibana_dashboard_public_ip: "192.168.0.143"
+metallb_grafana_dashboard_public_ip: "192.168.0.144"
+
+kubeapi_lb_dns_name: "kubeapi.home.linuxdataflow.org"
+kubeapi_lb_port: 6443
+
+freenas_username: "cm9vdA=="
+freenas_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34653165626636353535626466663433363034613633633261396633626261353462313862343966
+          3235373030633463393562666664663038636439303034330a616239316663306362643432303739
+          62336564656336316439316235636439633363343835613038396565373664353661306538616465
+          6665343565316538630a353563313338386564383261643338636133656430333764643636303861
+          6233

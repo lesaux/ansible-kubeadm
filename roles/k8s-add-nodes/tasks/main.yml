@@ -1,0 +1,4 @@
+- name: Refresh Join Token on master
+  import_tasks: refresh-token.yml
+  when:
+    - groups['masters'] | length == 1

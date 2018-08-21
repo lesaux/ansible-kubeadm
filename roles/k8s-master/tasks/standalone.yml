@@ -1,0 +1,14 @@
+
+- name: Init Kubernetes cluster
+  when: 
+    - reset_environment
+  become: true
+  shell: |
+    kubeadm init --pod-network-cidr {{ pod_network_cidr }} 
+  register: init_cluster
+
+- name: set kubeadm join command
+  when:
+    - reset_environment
+  set_fact:
+    kubeadm_join_command: "{{ init_cluster.stdout_lines | last }}"

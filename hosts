@@ -1,0 +1,13 @@
+[masters]
+192.168.0.104
+192.168.0.105
+192.168.0.106
+
+[workers]
+192.168.0.107
+192.168.0.108
+192.168.0.109
+
+[manifests]
+localhost ansible_connection=local
+

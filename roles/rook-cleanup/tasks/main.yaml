@@ -1,0 +1,8 @@
+- name: rook directoy cleanup
+  when: reset_rook
+  file: path=/var/lib/rook state=absent 
+
+- name: rook block device cleanup
+  when: reset_rook
+  shell: |
+    wipefs /dev/sdb

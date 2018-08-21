@@ -1,0 +1,11 @@
+- name: deploy weave pod network to k8s
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    sleep 5
+
+- name: pause for weave to settle
+  pause:
+    seconds: 60
+    prompt: "Waiting 60 seconds for all nodes to settle"
+  when: reset_environment

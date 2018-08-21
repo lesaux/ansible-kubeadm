@@ -1,0 +1,20 @@
+- name: Creates k8s-dahsboard directory
+  become: false
+  file: path=./dynamically_rendered/manifests/k8s-dashboard state=directory
+
+- name: "Copy dashboard manifests yaml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/k8s-dashboard/{{ item }}
+  with_items:
+    - k8s-dashboard.yaml
+    - k8s-dashboard-acl.yaml
+
+- name: deploy kubernetes dashboard
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/k8s-dashboard/{{ item }}
+    sleep 5
+  with_items: 
+    - k8s-dashboard.yaml
+    - k8s-dashboard-acl.yaml
+

@@ -1,0 +1,25 @@
+---
+
+- name: Reset Kubernetes component
+  shell: "kubeadm reset {{ kubeadm_reset_flags }}"
+  become: true
+  when: reset_environment
+  register: reset_cluster
+
+- name: kubeadm join with pre generated token
+  command: "{{ hostvars[groups['masters'][0]]['kubeadm_join_command'] }}"
+  when: reset_environment and reset_cluster
+
+- name: pause for joining nodes
+  pause:
+    seconds: 30
+    prompt: "Waiting 30 seconds for all nodes to settle"
+  when: reset_environment
+
+- name: Copy the kubeconfig file for convenience
+  when:
+    - reset_environment
+  become: true
+  shell: "sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {{ hostvars[groups['masters'][0]]['ansible_default_ipv4']['address'] }}:{{ item }} {{ item }}"
+  with_items:
+    - /etc/kubernetes/admin.conf

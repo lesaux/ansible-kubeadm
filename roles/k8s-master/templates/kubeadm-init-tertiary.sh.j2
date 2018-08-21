@@ -1,0 +1,37 @@
+node={{ hostvars[groups['masters'][0]]['ansible_default_ipv4']['address'] }}
+
+mkdir -p /etc/kubernetes/pki/etcd
+
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/admin.conf /etc/kubernetes/admin.conf
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/ca.crt /etc/kubernetes/pki/ca.crt
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/ca.key /etc/kubernetes/pki/ca.key
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/sa.key /etc/kubernetes/pki/sa.key
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/sa.pub /etc/kubernetes/pki/sa.pub
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/front-proxy-ca.crt /etc/kubernetes/pki/front-proxy-ca.crt
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/front-proxy-ca.key /etc/kubernetes/pki/front-proxy-ca.key
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/etcd/ca.crt /etc/kubernetes/pki/etcd/ca.crt
+sshpass -p {{ ansible_ssh_pass }} scp -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@${node}:/etc/kubernetes/pki/etcd/ca.key /etc/kubernetes/pki/etcd/ca.key
+
+
+kubeadm alpha phase certs all --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+kubeadm alpha phase kubelet config write-to-disk --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+kubeadm alpha phase kubelet write-env-file --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+kubeadm alpha phase kubeconfig kubelet --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+systemctl restart kubelet
+sleep 10
+
+kubectl --kubeconfig /etc/kubernetes/admin.conf exec -n kube-system etcd-{{ hostvars[groups['masters'][0]]['ansible_hostname'] }} -- etcdctl --ca-file /etc/kubernetes/pki/etcd/ca.crt --cert-file /etc/kubernetes/pki/etcd/peer.crt --key-file /etc/kubernetes/pki/etcd/peer.key --endpoints=https://{{ hostvars[groups['masters'][0]]['ansible_default_ipv4']['address'] }}:2379 member add {{ hostvars[groups['masters'][2]]['ansible_hostname'] }} https://{{ hostvars[groups['masters'][2]]['ansible_default_ipv4']['address'] }}:2380
+sleep 30
+
+kubeadm alpha phase etcd local --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+
+kubeadm alpha phase kubeconfig all --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+kubeadm alpha phase controlplane all --config /etc/kubernetes/kubeadm-config-tertiary.yaml
+sleep 5
+kubeadm alpha phase mark-master --config /etc/kubernetes/kubeadm-config-tertiary.yaml

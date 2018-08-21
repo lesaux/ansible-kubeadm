@@ -1,0 +1,28 @@
+- name: Creates metricbeat directory
+  become: false
+  file: path=./dynamically_rendered/manifests/metricbeat state=directory
+  #delegate_to: localhost
+
+- name: "Copy metricbeat manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/metricbeat/{{ item }}
+  with_items:
+    - metricbeat-namespace.yaml
+    - metricbeat-role.yaml
+    - metricbeat-service-account.yaml
+    - metricbeat-role-binding.yaml
+    - metricbeat-daemonset-configmap.yaml
+    - metricbeat-daemonset.yaml
+
+- name: deploy metricbeat cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/metricbeat/{{ item }}
+  with_items:
+    - metricbeat-namespace.yaml
+    - metricbeat-role.yaml
+    - metricbeat-service-account.yaml
+    - metricbeat-role-binding.yaml
+    - metricbeat-daemonset-configmap.yaml
+    - metricbeat-daemonset.yaml
+

@@ -1,0 +1,27 @@
+- name: Creates packetbeat directory
+  become: false
+  file: path=./dynamically_rendered/manifests/packetbeat state=directory
+  #delegate_to: localhost
+
+- name: "Copy packetbeat manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/packetbeat/{{ item }}
+  with_items:
+    - packetbeat-namespace.yaml
+    - packetbeat-role.yaml
+    - packetbeat-service-account.yaml
+    - packetbeat-role-binding.yaml
+    - packetbeat-daemonset-configmap.yaml
+    - packetbeat-daemonset.yaml
+
+- name: deploy packetbeat cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/packetbeat/{{ item }}
+  with_items:
+    - packetbeat-namespace.yaml
+    - packetbeat-role.yaml
+    - packetbeat-service-account.yaml
+    - packetbeat-role-binding.yaml
+    - packetbeat-daemonset-configmap.yaml
+    - packetbeat-daemonset.yaml

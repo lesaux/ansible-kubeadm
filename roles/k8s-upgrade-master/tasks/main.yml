@@ -1,0 +1,11 @@
+
+- name: Standalone Master Upgrade
+  import_tasks: standalone-master.yml
+  when:
+    - groups['masters'] | length == 1
+
+- name: Standalone Master Upgrade
+  import_tasks: ha-cluster.yml
+  when:
+    - groups['masters'] | length == 3
+

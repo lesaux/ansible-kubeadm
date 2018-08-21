@@ -1,0 +1,14 @@
+- name: Upgrade masters
+  hosts: masters
+  serial: 1
+  gather_facts: True
+  roles:
+    - k8s-upgrade-master
+
+- name: Upgrade workers
+  hosts: workers
+  serial: 1
+  gather_facts: True
+  roles:
+    - k8s-upgrade-worker
+

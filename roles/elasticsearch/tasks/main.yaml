@@ -1,0 +1,41 @@
+- name: Creates elasticsearch directory
+  become: false
+  file: path=./dynamically_rendered/manifests/elasticsearch state=directory
+  #delegate_to: localhost
+
+- name: "Copy elasticsearch manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/elasticsearch/{{ item }}
+  with_items:
+    - es-namespace.yaml
+    - es-master.yaml
+    - es-client.yaml
+    - es-services.yaml
+    - es-data-stateful.yaml
+    - es-data-svc.yaml
+    - kibana-deploy.yaml
+    - kibana-service.yaml
+    - es-curator-config.yaml
+    - es-curator-job.yaml
+
+- name: deploy elasticsearch cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/elasticsearch/{{ item }}
+  with_items:
+    - es-namespace.yaml
+    - es-master.yaml
+    - es-client.yaml
+    - es-services.yaml
+    - es-data-stateful.yaml
+    - es-data-svc.yaml
+    - kibana-deploy.yaml
+    - kibana-service.yaml
+    - es-curator-config.yaml
+    - es-curator-job.yaml
+
+- name: pause for elasticsearch cluster to settle
+  pause:
+    seconds: 30
+    prompt: "Waiting 30 seconds for ES cluster to settle"
+  when: reset_environment

@@ -1,0 +1,84 @@
+- name: HA-Masters - Upgrade kubeadm binary
+  when:
+    - upgrade_environment
+  become: true
+  shell: |
+     export VERSION=$(curl -sSL https://dl.k8s.io/release/stable.txt) # or manually specify a released Kubernetes version
+     export ARCH=amd64
+     curl -sSL https://dl.k8s.io/release/${VERSION}/bin/linux/${ARCH}/kubeadm > /tmp/kubeadm
+     chmod a+rx /tmp/kubeadm
+
+#- name: HA-Masters - Upgrade kubeadm binary
+#  when:
+#    - upgrade_environment
+#  become: true
+#  shell: |
+#    kubectl --kubeconfig /etc/kubernetes/admin.conf get configmap -n kube-system kubeadm-config -o yaml >/tmp/kubeadm-config-cm.yaml
+#    sed -i 's/^\([ \t]*nodeName:\).*/\1 <CURRENT-MASTER-NAME>/' /tmp/kubeadm-config-cm.yaml
+#    kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /tmp/kubeadm-config-cm.yaml --force
+
+- name: HA-Masters - Plan the cluster upgrade
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] == inventory_hostname"
+  become: true
+  shell: |
+    /tmp/kubeadm upgrade plan | grep "kubeadm upgrade apply"|tr -d '\t'
+  register: upgrade_plan
+
+- name: HA-Masters - Upgrade command
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] == inventory_hostname"
+  become: true
+  set_fact:
+    upgrade_command: /tmp/{{ upgrade_plan.stdout_lines | last }} -y
+
+#- debug: msg="{{ hostvars[groups['masters'][0]]['upgrade_command'] }}"
+#  when:
+#    - "groups['masters'][0] == inventory_hostname"
+
+- name: HA-Masters - run the upgrade command
+  when:
+    - upgrade_environment
+  command: "{{ hostvars[groups['masters'][0]]['upgrade_command'] }}"
+
+- name: HA-Masters - drain the master node
+  when:
+    - upgrade_environment
+  shell: |
+    kubectl drain {{ ansible_hostname }} --delete-local-data --ignore-daemonsets
+
+- name: HA-Masters - pause after the drain
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds after node being drained"
+  when:
+    - reset_environment
+
+- name: HA-Masters - upgrade kubeadm, kubectl and kubelet from apt
+  when:
+    - upgrade_environment
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    force: yes
+    state: latest
+  become: true
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: HA-Masters - uncordon master node
+  when:
+    - upgrade_environment
+  shell: |
+    kubectl uncordon {{ ansible_hostname }}
+
+- name: HA-Masters - wait some time after the uncordon
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds after node being uncordoned"
+  when:
+    - reset_environment

@@ -1,0 +1,27 @@
+- name: Creates freenas-nfs-provisioner directory
+  become: false
+  file: path=./dynamically_rendered/manifests/freenas-nfs-provisioner state=directory
+  #delegate_to: localhost
+
+- name: "Copy freenas-nfs-provisioner manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/freenas-nfs-provisioner/{{ item }}
+  with_items:
+    - namespace.yaml
+    - rbac.yaml
+    - deployment.yaml
+    - secret.yaml
+    - class.yaml
+
+- name: deploy freenas-nfs-provisioner cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/freenas-nfs-provisioner/{{ item }}
+    sleep 5
+  with_items:
+    - namespace.yaml
+    - rbac.yaml
+    - deployment.yaml
+    - secret.yaml
+    - class.yaml
+

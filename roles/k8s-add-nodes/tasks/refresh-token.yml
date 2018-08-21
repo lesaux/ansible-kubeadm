@@ -1,0 +1,21 @@
+
+- name: Refresh the join token and hash
+  when:
+    - add_nodes
+  when:
+    - "groups['masters'][0] == inventory_hostname"
+  become: true
+  shell: |
+    token=`kubeadm token create`
+    hash=`openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+    echo kubeadm join --token $token {{ hostvars[groups['masters'][0]]['ansible_default_ipv4']['address'] }}:6443 --discovery-token-ca-cert-hash sha256:$hash
+  register: join_command
+
+- name: Create join command
+  when:
+    - reset_environment
+    - groups['masters'][0] == inventory_hostname
+  set_fact:
+    kubeadm_join_command: "{{ join_command.stdout_lines | last }}"
+
+

@@ -1,0 +1,25 @@
+- name: Creates heapster directory
+  become: false
+  file: path=./dynamically_rendered/manifests/heapster state=directory
+  #delegate_to: localhost
+
+- name: "Copy heapster manifests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/heapster/{{ item }}
+  with_items:
+    - heapster-clusterrole.yaml
+    - heapster-clusterrole-binding.yaml
+    - heapster-service-account.yaml
+    - heapster-service.yaml
+    - heapster-deployment.yaml
+
+- name: deploy heapster cluster
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/heapster/{{ item }}
+  with_items:
+    - heapster-clusterrole.yaml
+    - heapster-clusterrole-binding.yaml
+    - heapster-service-account.yaml
+    - heapster-service.yaml
+    - heapster-deployment.yaml

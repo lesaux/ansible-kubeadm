@@ -1,0 +1,6 @@
+.vagrant
+*.retry
+.vscode/
+*.vdi
+/.project
+tests/yaml.sh

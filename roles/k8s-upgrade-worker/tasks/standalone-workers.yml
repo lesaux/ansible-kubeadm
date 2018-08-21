@@ -1,0 +1,57 @@
+- name: Drain this node
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] != inventory_hostname"
+  command: kubectl --kubeconfig /etc/kubernetes/admin.conf drain {{ ansible_hostname }} --delete-local-data --ignore-daemonsets
+
+- name: pause after draining the node
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds after draining the node"
+  when: 
+    - upgrade_environment
+    - "groups['masters'][0] == inventory_hostname"
+
+- name: upgrade kubeadm, kubectl and kubelet from apt
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] != inventory_hostname"
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    force: yes
+    state: latest
+  become: true
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: update kubelet config on this node
+  become: true
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] != inventory_hostname"
+  shell: |
+    kubeadm upgrade node config --kubelet-version $(kubelet --version | cut -d ' ' -f 2)
+
+- name: restart kubelet on this node
+  become: true
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] != inventory_hostname"
+  command: systemctl restart kubelet
+
+- name: uncordon this node
+  when:
+    - upgrade_environment
+    - "groups['masters'][0] != inventory_hostname"
+  command: kubectl --kubeconfig /etc/kubernetes/admin.conf uncordon {{ ansible_hostname }}
+
+- name: pause after uncordon
+  pause:
+    seconds: 120
+    prompt: "Waiting 120 seconds after node uncordoned"
+  when: 
+    - upgrade_environment
+    - "groups['masters'][0] == inventory_hostname"

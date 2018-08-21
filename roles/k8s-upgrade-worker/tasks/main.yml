@@ -1,0 +1,5 @@
+
+- name: Worker nodes rolling update
+  import_tasks: standalone-workers.yml
+  when:
+    - groups['masters'] | length == 1

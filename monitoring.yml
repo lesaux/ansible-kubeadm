@@ -1,0 +1,12 @@
+- name: Install Monitoring Stack
+  hosts: manifests
+  gather_facts: false
+  become: yes
+  roles:
+    - kube-state-metrics
+    - heapster
+    - elasticsearch
+    - filebeat
+    - metricbeat
+    - packetbeat
+    - auditbeat

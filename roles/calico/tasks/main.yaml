@@ -1,0 +1,26 @@
+- name: Creates calico directory
+  become: false
+  file: path=./dynamically_rendered/manifests/calico state=directory
+  #delegate_to: localhost
+
+- name: "Copy calico manisfests yml files"
+  become: false
+  template: src="{{ item }}.j2" dest=./dynamically_rendered/manifests/calico/{{ item }}
+  with_items:
+    - rbac-kdd.yaml
+    - calico.yaml    
+
+- name: deploy calico pod network to k8s
+  become: false
+  shell: |
+    kubectl --kubeconfig ./kubeconfig apply -f ./dynamically_rendered/manifests/calico/{{ item }}
+    sleep 5
+  with_items:
+    - rbac-kdd.yaml
+    - calico.yaml    
+
+- name: pause for calico to settle
+  pause:
+    seconds: 60
+    prompt: "Waiting 60 seconds for all nodes to settle"
+  when: reset_environment
