@@ -9,11 +9,13 @@
   import_tasks: standalone.yml
   when:
     - groups['masters'] | length == 1
+    - reset_environment
 
 - name: Clustered Masters Setup
   import_tasks: ha-cluster.yml
   when:
     - groups['masters'] | length == 3
+    - reset_environment
 
 - name: Create Kubernetes config directory
   become: false
@@ -57,3 +59,4 @@
     flat: yes
   when:
     - "groups['masters'][0] == inventory_hostname"
+    - reset_environment
