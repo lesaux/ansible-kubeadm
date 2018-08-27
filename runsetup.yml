@@ -32,5 +32,5 @@
 - name: Network, LB  and Storage addons
   import_playbook: addons.yml
 
-#- name: Monitoring addons
-#  import_playbook: monitoring.yml
+- name: Monitoring addons
+  import_playbook: monitoring.yml
